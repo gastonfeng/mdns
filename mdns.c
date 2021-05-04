@@ -435,18 +435,18 @@ open_client_sockets(int* sockets, int max_sockets, int port) {
 	int first_ipv4 = 1;
 	int first_ipv6 = 1;
 	for (PIP_ADAPTER_ADDRESSES adapter = adapter_address; adapter; adapter = adapter->Next) {
-		if (adapter->TunnelType == TUNNEL_TYPE_TEREDO)
-			continue;
-		if (adapter->OperStatus != IfOperStatusUp)
-			continue;
+//		if (adapter->TunnelType == TUNNEL_TYPE_TEREDO)
+//			continue;
+        if (adapter->OperStatus != IfOperStatusUp)
+            continue;
 
-		for (IP_ADAPTER_UNICAST_ADDRESS* unicast = adapter->FirstUnicastAddress; unicast;
-		     unicast = unicast->Next) {
-			if (unicast->Address.lpSockaddr->sa_family == AF_INET) {
-				struct sockaddr_in* saddr = (struct sockaddr_in*)unicast->Address.lpSockaddr;
-				if ((saddr->sin_addr.S_un.S_un_b.s_b1 != 127) ||
-				    (saddr->sin_addr.S_un.S_un_b.s_b2 != 0) ||
-				    (saddr->sin_addr.S_un.S_un_b.s_b3 != 0) ||
+        for (IP_ADAPTER_UNICAST_ADDRESS *unicast = adapter->FirstUnicastAddress; unicast;
+             unicast = unicast->Next) {
+            if (unicast->Address.lpSockaddr->sa_family == AF_INET) {
+                struct sockaddr_in *saddr = (struct sockaddr_in *) unicast->Address.lpSockaddr;
+                if ((saddr->sin_addr.S_un.S_un_b.s_b1 != 127) ||
+                    (saddr->sin_addr.S_un.S_un_b.s_b2 != 0) ||
+                    (saddr->sin_addr.S_un.S_un_b.s_b3 != 0) ||
 				    (saddr->sin_addr.S_un.S_un_b.s_b4 != 1)) {
 					int log_addr = 0;
 					if (first_ipv4) {
@@ -606,21 +606,21 @@ open_service_sockets(int* sockets, int max_sockets) {
 	open_client_sockets(0, 0, 0);
 
 	if (num_sockets < max_sockets) {
-		struct sockaddr_in sock_addr;
-		memset(&sock_addr, 0, sizeof(struct sockaddr_in));
-		sock_addr.sin_family = AF_INET;
+        struct sockaddr_in sock_addr;
+        memset(&sock_addr, 0, sizeof(struct sockaddr_in));
+        sock_addr.sin_family = AF_INET;
 #ifdef _WIN32
-		sock_addr.sin_addr = in4addr_any;
+        sock_addr.sin_addr.s_addr = INADDR_ANY;
 #else
-		sock_addr.sin_addr.s_addr = INADDR_ANY;
+        sock_addr.sin_addr.s_addr = INADDR_ANY;
 #endif
-		sock_addr.sin_port = htons(MDNS_PORT);
+        sock_addr.sin_port = htons(MDNS_PORT);
 #ifdef __APPLE__
-		sock_addr.sin_len = sizeof(struct sockaddr_in);
+        sock_addr.sin_len = sizeof(struct sockaddr_in);
 #endif
-		int sock = mdns_socket_open_ipv4(&sock_addr);
-		if (sock >= 0)
-			sockets[num_sockets++] = sock;
+        int sock = mdns_socket_open_ipv4(&sock_addr);
+        if (sock >= 0)
+            sockets[num_sockets++] = sock;
 	}
 
 	if (num_sockets < max_sockets) {
@@ -775,18 +775,17 @@ send_mdns_query(const char* service, int record) {
 }
 
 // Provide a mDNS service, answering incoming DNS-SD and mDNS queries
-static int
-service_mdns(const char* hostname, const char* service_name, int service_port) {
-	int sockets[32];
-	int num_sockets = open_service_sockets(sockets, sizeof(sockets) / sizeof(sockets[0]));
-	if (num_sockets <= 0) {
-		printf("Failed to open any client sockets\n");
-		return -1;
-	}
-	printf("Opened %d socket%s for mDNS service\n", num_sockets, num_sockets ? "s" : "");
+int service_mdns(const char *hostname, const char *service_name, int service_port) {
+    int sockets[32];
+    int num_sockets = open_service_sockets(sockets, sizeof(sockets) / sizeof(sockets[0]));
+    if (num_sockets <= 0) {
+        printf("Failed to open any client sockets\n");
+        return -1;
+    }
+    printf("Opened %d socket%s for mDNS service\n", num_sockets, num_sockets ? "s" : "");
 
-	printf("Service mDNS: %s:%d\n", service_name, service_port);
-	printf("Hostname: %s\n", hostname);
+    printf("Service mDNS: %s:%d\n", service_name, service_port);
+    printf("Hostname: %s\n", hostname);
 
 	size_t capacity = 2048;
 	void* buffer = malloc(capacity);
@@ -980,7 +979,7 @@ fuzz_mdns(void) {
 }
 
 #endif
-
+#if 0
 int
 main(int argc, const char* const* argv) {
 	int mode = 0;
@@ -1066,3 +1065,4 @@ main(int argc, const char* const* argv) {
 
 	return 0;
 }
+#endif

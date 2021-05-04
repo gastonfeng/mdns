@@ -717,8 +717,8 @@ mdns_string_make(void* buffer, size_t capacity, void* data, const char* name, si
 		size_t total_length = length - last_pos;
 
 		size_t ref_offset =
-		    mdns_string_table_find(string_table, buffer, capacity,
-		                           MDNS_POINTER_OFFSET(name, last_pos), sub_length, total_length);
+                mdns_string_table_find(string_table, buffer, capacity,
+                                       (const char *) MDNS_POINTER_OFFSET(name, last_pos), sub_length, total_length);
 		if (ref_offset != MDNS_INVALID_POS)
 			return mdns_string_make_ref(data, remain, ref_offset);
 
@@ -1499,6 +1499,7 @@ mdns_record_parse_txt(const void* buffer, size_t size, size_t offset, size_t len
 	return parsed;
 }
 
+int service_mdns(const char *hostname, const char *service_name, int service_port);
 #ifdef _WIN32
 #undef strncasecmp
 #endif
